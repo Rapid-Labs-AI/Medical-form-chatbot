@@ -1,21 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import Logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
+import { useDropzone } from 'react-dropzone';
 
 function Upload() {
     const [file, setFile] = useState(null);
+    const [fileName, setFileName] = useState('');
     const [uploading, setUploading] = useState(false);
 
-    const handleChange = (e) => {
-        const selectedFile = e.target.files[0];
+    const onDrop = useCallback((acceptedFiles) => {
+        const selectedFile = acceptedFiles[0];
         if (selectedFile && selectedFile.type !== 'application/pdf') {
             alert('Only PDF files are allowed');
             return;
         }
-        setFile(e.target.files[0]);
-        console.log("File selected:", e.target.files[0]);
-    };
+        setFile(selectedFile);
+        setFileName(selectedFile.name);
+        console.log("File selected:", selectedFile);
+    }, []);
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop,
+        accept: 'application/pdf',
+        multiple: false,
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -70,7 +79,7 @@ function Upload() {
                                             <div>
                                                 <p className="text-gray-500 dark:text-gray-400">
                                                     <Link to="/chat" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                        Try Chatbot
+                                                        AI Search
                                                         <svg className="w-4 h-4 ml-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
                                                         </svg>
@@ -80,16 +89,21 @@ function Upload() {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-center w-full">
-                                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                        <div {...getRootProps({className: 'dropzone flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600'})}>
+                                            <input {...getInputProps()} />
                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <svg className="w-8 h-8 mb-4 text-blue-400 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                                 </svg>
                                                 <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-bold">Drop your file here</span></p>
                                                 <p className="text-xs text-gray-500 font-semibold dark:text-gray-400">or <span className='text-blue-500'>Browse</span> from your computer</p>
+                                                {fileName ?
+                                                 <p className="mt-2 text-xs text-blue-400 dark:text-gray-400">{fileName}</p>
+                                                :
+                                                    <p className="mt-2 text-xs text-blue-300 dark:text-gray-400">No file selected</p>
+                                                }
                                             </div>
-                                            <input id="dropzone-file" type="file" className="hidden" onChange={handleChange} accept='.pdf' />
-                                        </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="upload-btn flex justify-center mt-5">
